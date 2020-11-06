@@ -23,6 +23,10 @@ set ExecutionPath {
   ECal
   HCal
 
+  PhotonEnergySmearing
+  PhotonEfficiency
+  PhotonIsolation
+
   ElectronFilter
   TrackPileUpSubtractor
   NeutralTowerMerger
@@ -52,8 +56,6 @@ set ExecutionPath {
 
   JetEnergyScale
 
-  PhotonEfficiency
-  PhotonIsolation
 
   ElectronEfficiency
   ElectronIsolation
@@ -142,6 +144,21 @@ module Efficiency ChargedHadronTrackingEfficiency {
                          (abs(eta) > 1.5 && abs(eta) <= 2.5) * (pt > 1.0)                  * (0.85) +
                          (abs(eta) > 2.5)                                                  * (0.00)}
 }
+
+
+#################################                                                                                                                                       
+# Energy resolution for electrons                                                                                                                                       
+#################################                                                                                                                                       
+
+module EnergySmearing PhotonEnergySmearing {
+  set InputArray ECal/eflowPhotons
+  set OutputArray eflowPhotons
+
+  # adding 1% extra photon smearing                                                                                                                                     
+    set ResolutionFormula {energy*0.01}
+
+}
+
 
 ##############################
 # Electron tracking efficiency
@@ -769,7 +786,7 @@ module EnergyScale JetEnergyScale {
 ###################
 
 module Efficiency PhotonEfficiency {
-  set InputArray ECal/eflowPhotons
+  set InputArray PhotonEnergySmearing/eflowPhotons
   set OutputArray photons
 
   # set EfficiencyFormula {efficiency formula as a function of eta and pt}
