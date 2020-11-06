@@ -26,6 +26,9 @@ set ExecutionPath {
   ElectronFilter
   TrackPileUpSubtractor
   NeutralTowerMerger
+
+  TowerMerger
+  NeutralEFlowMerger
   EFlowMergerAllTracks
   EFlowMerger
   EFlowFilter
@@ -256,6 +259,19 @@ module VertexFinder VertexFinder {
   set GrowSeeds 1
 
 }
+
+
+####################
+# Neutral eflow merger
+####################
+
+module Merger NeutralEFlowMerger {
+# add InputArray InputArray                                                                                                                                             
+  add InputArray PhotonEnergySmearing/eflowPhotons
+  add InputArray HCal/eflowNeutralHadrons
+  set OutputArray eflowTowers
+}
+
 
 
 ##############
@@ -567,6 +583,15 @@ module TrackPileUpSubtractor TrackPileUpSubtractor {
 ####################
 # Neutral Tower merger
 ####################
+
+
+module Merger TowerMerger {
+# add InputArray InputArray                                                                                                                                             
+  add InputArray ECal/ecalTowers
+  add InputArray HCal/hcalTowers
+  set OutputArray towers
+}
+
 
 module Merger NeutralTowerMerger {
 # add InputArray InputArray
