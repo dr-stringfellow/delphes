@@ -64,13 +64,13 @@ set ExecutionPath {
   JetFlavorAssociation
 
   BTagging
-  TauTagging
+  #TauTagging
 
   UniqueObjectFinder
 
   ScalarHT
 
-  ParticleFlow
+  #ParticleFlow
 
   TreeWriter
 }
@@ -1027,7 +1027,7 @@ module TreeWriter TreeWriter {
   add Branch PuppiMissingET/momentum PuppiMissingET MissingET
   add Branch ScalarHT/energy ScalarHT ScalarHT
 
-  add Branch RunPUPPI/PuppiParticles ParticleFlowCandidate ParticleFlowCandidate
+  #add Branch RunPUPPI/PuppiParticles ParticleFlowCandidate ParticleFlowCandidate
 
   add Branch JetEnergyScale/jets Jet Jet
   add Branch FatJetFinder/jets FatJet Jet
