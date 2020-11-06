@@ -37,6 +37,9 @@ set ExecutionPath {
   GenJetFinder
   GenMissingET
 
+  RunPUPPIBase
+  RunPUPPI
+
   Rho
   FastJetFinder
   FatJetFinder
@@ -54,9 +57,6 @@ set ExecutionPath {
 
   MuonEfficiency
   MuonIsolation
-
-  RunPUPPIBase
-  RunPUPPI
 
   MissingET
   PuppiMissingET
