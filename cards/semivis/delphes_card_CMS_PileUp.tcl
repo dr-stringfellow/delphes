@@ -36,6 +36,8 @@ set ExecutionPath {
   EFlowMerger
   EFlowFilter
 
+  Rho
+
   PhotonEfficiency
   PhotonIsolation
 
