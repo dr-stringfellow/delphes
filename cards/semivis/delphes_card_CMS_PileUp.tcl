@@ -1058,7 +1058,7 @@ module UniqueObjectFinder UniqueObjectFinder {
 
 module TreeWriter TreeWriter {
 
-  add Branch PileUpMerger/stableParticles PileUpMix GenParticle
+  #add Branch PileUpMerger/stableParticles PileUpMix GenParticle
 
   add Branch GenJetFinder/jets GenJet Jet
   add Branch GenMissingET/momentum GenMissingET MissingET
