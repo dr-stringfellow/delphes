@@ -23,10 +23,6 @@ set ExecutionPath {
   ECal
   HCal
 
-  PhotonEnergySmearing
-  PhotonEfficiency
-  PhotonIsolation
-
   ElectronFilter
   TrackPileUpSubtractor
   NeutralTowerMerger
@@ -36,6 +32,10 @@ set ExecutionPath {
   EFlowMergerAllTracks
   EFlowMerger
   EFlowFilter
+
+  PhotonEnergySmearing
+  PhotonEfficiency
+  PhotonIsolation
 
   LeptonFilterNoLep
   LeptonFilterLep
