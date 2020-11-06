@@ -64,13 +64,10 @@ set ExecutionPath {
   JetFlavorAssociation
 
   BTagging
-  #TauTagging
 
   UniqueObjectFinder
 
   ScalarHT
-
-  #ParticleFlow
 
   TreeWriter
 }
