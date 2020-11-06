@@ -28,12 +28,14 @@ set ExecutionPath {
   NeutralTowerMerger
 
   TowerMerger
+
+  PhotonEnergySmearing
+
   NeutralEFlowMerger
   EFlowMergerAllTracks
   EFlowMerger
   EFlowFilter
 
-  PhotonEnergySmearing
   PhotonEfficiency
   PhotonIsolation
 
