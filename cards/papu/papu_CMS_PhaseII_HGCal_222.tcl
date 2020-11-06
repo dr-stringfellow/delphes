@@ -76,13 +76,13 @@ set ExecutionPath {
 
   JetEnergyScale
 
-  JetFlavorAssociation
+  #JetFlavorAssociation
 
-  BTaggingLoose
-  BTaggingMedium
-  BTaggingTight
+  #BTaggingLoose
+  #BTaggingMedium
+  #BTaggingTight
 
-  TauTagging
+  #TauTagging
 
   GenParticleFilter
 
@@ -1079,7 +1079,7 @@ module TreeWriter TreeWriter {
   add Branch PileUpMerger/stableParticles PileUpMix GenParticle
   add Branch PileUpMerger/vertices GenVertex Vertex
 
-  add Branch GenJetFinder/jets GenJet Jet
+  #add Branch GenJetFinder/jets GenJet Jet
   add Branch GenMissingET/momentum GenMissingET MissingET
 
 ##  add Branch HCal/eflowTracks EFlowTrack Track
@@ -1091,8 +1091,8 @@ module TreeWriter TreeWriter {
   #add Branch MuonLooseIdEfficiency/muons MuonLoose Muon
   #add Branch MuonTightIdEfficiency/muons MuonTight Muon
 
-  #add Branch JetEnergyScale/jets Jet Jet
-  #add Branch FatJetFinder/jets FatJet Jet
+  add Branch JetEnergyScale/jets Jet Jet
+  add Branch FatJetFinder/jets FatJet Jet
 
   add Branch MissingET/momentum MissingET MissingET
   add Branch PuppiMissingET/momentum PuppiMissingET MissingET
