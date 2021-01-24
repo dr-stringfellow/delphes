@@ -427,6 +427,7 @@ tmp/modules/ModulesDict.$(SrcSuf): \
 	modules/IdentificationMap.h \
 	modules/EnergySmearing.h \
 	modules/MomentumSmearing.h \
+	modules/EnergyCorrelations.h \
 	modules/TrackSmearing.h \
 	modules/TrackCovariance.h \
 	modules/ImpactParameterSmearing.h \
@@ -904,6 +905,15 @@ tmp/modules/MomentumSmearing.$(ObjSuf): \
 	external/ExRootAnalysis/ExRootClassifier.h \
 	external/ExRootAnalysis/ExRootFilter.h \
 	external/ExRootAnalysis/ExRootResult.h
+tmp/modules/EnergyCorrelations.$(ObjSuf): \
+	modules/EnergyCorrelations.$(SrcSuf) \
+	modules/EnergyCorrelations.h \
+	classes/DelphesClasses.h \
+	classes/DelphesFactory.h \
+	classes/DelphesFormula.h \
+	external/ExRootAnalysis/ExRootClassifier.h \
+	external/ExRootAnalysis/ExRootFilter.h \
+	external/ExRootAnalysis/ExRootResult.h
 tmp/modules/OldCalorimeter.$(ObjSuf): \
 	modules/OldCalorimeter.$(SrcSuf) \
 	modules/OldCalorimeter.h \
@@ -1217,6 +1227,7 @@ DELPHES_OBJ +=  \
 	tmp/modules/Merger.$(ObjSuf) \
 	tmp/modules/PuppiMerger.$(ObjSuf) \
 	tmp/modules/MomentumSmearing.$(ObjSuf) \
+	tmp/modules/EnergyCorrelations.$(ObjSuf) \
 	tmp/modules/OldCalorimeter.$(ObjSuf) \
 	tmp/modules/ParticleDensity.$(ObjSuf) \
 	tmp/modules/ParticlePropagator.$(ObjSuf) \
@@ -2137,6 +2148,10 @@ external/fastjet/version.hh: \
 	@touch $@
 
 modules/MomentumSmearing.h: \
+	classes/DelphesModule.h
+	@touch $@
+
+modules/EnergyCorrelations.h: \
 	classes/DelphesModule.h
 	@touch $@
 
