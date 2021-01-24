@@ -835,6 +835,9 @@ module FastJetFinder FatJetFinder {
   set R0SoftDrop 0.8
 
   set JetPTMin 200.0
+
+  
+
 }
 
 
@@ -1066,14 +1069,14 @@ module TreeWriter TreeWriter {
   add Branch UniqueObjectFinder/electrons Electron Electron
   add Branch UniqueObjectFinder/photons Photon Photon
   add Branch UniqueObjectFinder/muons Muon Muon
-  add Branch MissingET/momentum MissingET MissingET
+  #add Branch MissingET/momentum MissingET MissingET
   add Branch PuppiMissingET/momentum PuppiMissingET MissingET
   add Branch ScalarHT/energy ScalarHT ScalarHT
 
-  #add Branch RunPUPPI/PuppiParticles ParticleFlowCandidate ParticleFlowCandidate
+  add Branch RunPUPPI/PuppiParticles ParticleFlowCandidate ParticleFlowCandidate
 
-  add Branch JetEnergyScale/jets Jet Jet
-  add Branch FatJetFinder/jets FatJet Jet
+  #add Branch JetEnergyScale/jets Jet Jet
+  #add Branch FatJetFinder/jets FatJet Jet
 
   add Branch Rho/rho Rho Rho
   add Branch PileUpMerger/vertices Vertex Vertex
