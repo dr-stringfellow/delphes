@@ -25,6 +25,7 @@
  */
 
 #include "modules/FastJetFinder.h"
+#include "modules/EnergyCorrelations.h"
 
 #include "classes/DelphesClasses.h"
 #include "classes/DelphesFactory.h"
@@ -187,6 +188,10 @@ void FastJetFinder::Init()
   // - voronoi based areas -
   fEffectiveRfact = GetDouble("EffectiveRfact", 1.0);
 
+  // ECF parameters
+
+  fECFs = GetBool("calcECFs", false);
+
   switch(fAreaAlgorithm)
   {
   default:
@@ -340,7 +345,7 @@ void FastJetFinder::Process()
   while((candidate = static_cast<Candidate *>(fItInputArray->Next())))
   {
     momentum = candidate->Momentum;
-    jet = PseudoJet(momentum.Px(), momentum.Py(), momentum.Pz(), momentum.E());
+    jet = PseudoJet(candidate->puppiW*momentum.Px(), candidate->puppiW*momentum.Py(), candidate->puppiW*momentum.Pz(), candidate->puppiW*momentum.E());
     jet.set_user_index(number);
     inputList.push_back(jet);
     ++number;
@@ -576,6 +581,26 @@ void FastJetFinder::Process()
       candidate->Tau[4] = nSub5(*itOutputList);
     }
 
+    if(fECFs){
+
+      typedef std::vector<PseudoJet> VPseudoJet;
+      contrib::SoftDrop softDrop(fBetaSoftDrop, fSymmetryCutSoftDrop, fR0SoftDrop);
+      fastjet::PseudoJet softdrop_jet = softDrop(*itOutputList);
+      VPseudoJet sdConstituents = sorted_by_pt(softdrop_jet.constituents());
+      unsigned nFilter = min(100, (int)sdConstituents.size());
+      VPseudoJet sdConstsFiltered(sdConstituents.begin(), sdConstituents.begin() + nFilter);
+
+
+      for (auto ibeta : fIBetas) {
+	for (auto N : fNs) {
+	  for (auto order : fOrders) {
+	    svj::ECFParams p;
+	    p.order = order; p.N = N; p.ibeta = ibeta;
+	    // candidate->fjECFNs[p][iFJ] = fj.get_ecf(order,N,ibeta);
+	  }
+	}
+      } //loop over betas                          	
+    }
     fOutputArray->Add(candidate);
   }
   delete sequence;

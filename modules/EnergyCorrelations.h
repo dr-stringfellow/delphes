@@ -102,6 +102,25 @@ namespace svj {
   }
 
 
+
+  struct ECFParams {
+    int ibeta;
+    int N;
+    int order;
+    bool operator==(const ECFParams &o) const {
+      return ibeta==o.ibeta && N==o.N && order==o.order;
+    }
+    bool operator<(const ECFParams &o) const {
+      return ( N<o.N ||
+	       (N==o.N && order<o.order) ||
+	       (N==o.N && order==o.order && ibeta<o.ibeta) );
+    }
+    bool operator>(const ECFParams &o) const {
+      return ! operator<(o);
+    }
+  };
+
+
   class ECFCalculator {
   public:
     enum param {

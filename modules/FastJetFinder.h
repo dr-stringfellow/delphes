@@ -98,6 +98,14 @@ private:
   Double_t fRcutOff;
   Int_t fN;
 
+  //-- ECFs --
+
+  Bool_t fECFs;
+  const std::vector<int> fIBetas =  {0,1,2,3};
+  const std::vector<int> fNs = {1,2,3,4};
+  const std::vector<int> fOrders = {1,2,3};
+
+
   //-- Trimming parameters --
 
   Bool_t fComputeTrimming;
