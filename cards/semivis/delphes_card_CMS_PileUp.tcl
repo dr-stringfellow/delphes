@@ -20,6 +20,8 @@ set ExecutionPath {
 
   TrackMerger
 
+  VertexFinder
+
   ECal
   HCal
 
@@ -367,6 +369,27 @@ module Merger RunPUPPI {
   add InputArray LeptonFilterLep/eflowTracksLeptons
   set OutputArray PuppiParticles
 }
+
+##################################  
+# Primary vertex reconstruction  
+##################################  
+
+
+module VertexFinder VertexFinder {
+  set InputArray TrackMerger/tracks  
+  set OutputArray tracks
+  set VertexOutputArray vertices
+
+  set MinPT 1.0
+  set MinNDF 4
+  set SeedMinPT 1.0
+
+  set Sigma     3.0
+  set MaxEta    10.0
+  set GrowSeeds 1
+
+}
+
 
 #############
 #   ECAL
@@ -1080,4 +1103,5 @@ module TreeWriter TreeWriter {
 
   add Branch Rho/rho Rho Rho
   add Branch PileUpMerger/vertices Vertex Vertex
+
 }
