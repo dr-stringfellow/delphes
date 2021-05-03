@@ -11,6 +11,7 @@
 
 #include "TROOT.h"
 
+#include "TH1D.h"
 #include "TFile.h"
 #include "TTree.h"
 #include "TLeaf.h"
@@ -27,6 +28,10 @@
 #include "fastjet/Selector.hh"
 #include "fastjet/tools/JetMedianBackgroundEstimator.hh"
 
+#include "external/fastjet/contribs/EnergyCorrelator/EnergyCorrelator.hh"
+//#include "fastjet/contrib/EnergyCorrelator.hh"
+//#include "modules/EnergyCorrelator.hh"
+
 #include "fastjet/plugins/CDFCones/fastjet/CDFJetCluPlugin.hh"
 #include "fastjet/plugins/CDFCones/fastjet/CDFMidPointPlugin.hh"
 #include "fastjet/plugins/SISCone/fastjet/SISConePlugin.hh"
@@ -34,6 +39,7 @@
 #include "fastjet/contribs/Nsubjettiness/ExtraRecombiners.hh"
 #include "fastjet/contribs/Nsubjettiness/Njettiness.hh"
 #include "fastjet/contribs/Nsubjettiness/NjettinessPlugin.hh"
+#include "fastjet/contribs/Nsubjettiness/XConePlugin.hh"
 #include "fastjet/contribs/Nsubjettiness/Nsubjettiness.hh"
 
 #include "fastjet/contribs/ValenciaPlugin/ValenciaPlugin.hh"
@@ -48,18 +54,7 @@ using namespace std;
 using namespace fastjet;
 using namespace fastjet::contrib;
 
-static int NMAX = 1000;
-const std::vector<double> betas = {0.5, 1.0, 2.0, 4.0};
-const std::vector<int> ibetas = {0,1,2,3};
-const std::vector<int> Ns = {1,2,3,4};
-const std::vector<int> orders = {1,2,3};
-
 //---------------------------------------------------------------------------
-
-
-TString makeECFString(svj::ECFParams p) {
-  return TString::Format("ECFN_%i_%i_%.2i",p.order,p.N,int(10*betas.at(p.ibeta)));
-}
 
 struct PFCand
 {
@@ -68,11 +63,62 @@ struct PFCand
   float phi = 0;
   float e = 0;
   float puppi = 1;
-  float charge = 1;
-  float hardfrac = 1;  
   float vtxid = -1;
 };
 
+
+struct puppiak8
+{
+  float pt = 0;
+  float eta = 0;
+  float phi = 0;
+  float msd = 0;
+  float n2 = 1;
+};
+
+struct chsak4
+{
+  float pt = 0;
+  float eta = 0;
+  float phi = 0;
+  float mass = 0;
+};
+
+struct xcone4
+{
+  float pt = 0;
+  float eta = 0;
+  float phi = 0;
+  float mass = 0;
+};
+
+
+template <typename T>
+void 
+fill(vector<float> &vattr, vector<puppiak8> &fatjets, T fn_attr)
+{
+  vattr.clear();
+  for (auto& p : fatjets)
+    vattr.push_back(fn_attr(p));
+}
+
+template <typename T>
+void 
+fillak4(vector<float> &vattr, vector<chsak4> &jets, T fn_attr)
+{
+  vattr.clear();
+  for (auto& p : jets)
+    vattr.push_back(fn_attr(p));
+}
+
+template <typename T>
+void 
+fillxcone4(vector<float> &vattr, vector<xcone4> &jets, T fn_attr)
+{
+  vattr.clear();
+  for (auto& p : jets)
+    vattr.push_back(fn_attr(p));
+}
 
 
 //---------------------------------------------------------------------------
@@ -100,42 +146,43 @@ int main(int argc, char *argv[])
   auto* tout = new TTree("events", "events");
 
   unsigned int nevt = itree->GetEntries();
-  TBranch* partbranch = (TBranch*)itree->GetBranch("Particle");
   TBranch* pfbranch = (TBranch*)itree->GetBranch("ParticleFlowCandidate");
-  TBranch* genjetbranch = (TBranch*)itree->GetBranch("GenJet");
   std::cout << "NEVT: " << nevt << std::endl;
   vector<PFCand> input_particles;
-  vector<PFCand> output_particles;
-  output_particles.reserve(NMAX);
+  vector<puppiak8> output_fatjets;
+  vector<chsak4> output_jets;
+  vector<xcone4> output_xjets;
+  output_fatjets.reserve(10);
+  output_jets.reserve(30);
+  output_xjets.reserve(3);
 
-  vector<float> vpt, veta, vphi, ve, vpuppi, vpdgid, vhardfrac;
-  vpt.reserve(NMAX); veta.reserve(NMAX); vphi.reserve(NMAX); 
-  ve.reserve(NMAX); vpuppi.reserve(NMAX); vpdgid.reserve(NMAX); 
-  vhardfrac.reserve(NMAX);
+  std::vector<float> puppijetpt, puppijeteta, puppijetphi, puppijetm, puppijetn2;
+  puppijetpt.reserve(10); puppijeteta.reserve(10); puppijetphi.reserve(10); puppijetm.reserve(10); puppijetn2.reserve(10);
+  std::vector<float> chsjetpt, chsjeteta, chsjetphi, chsjetm;
+  chsjetpt.reserve(30); chsjeteta.reserve(30); chsjetphi.reserve(30); chsjetm.reserve(30); 
+  std::vector<float> xjetpt, xjeteta, xjetphi, xjetm;
+  xjetpt.reserve(30); xjeteta.reserve(30); xjetphi.reserve(30); xjetm.reserve(30); 
 
-  float genjetpt=-99., genjeteta=-99., genjetphi=-99., genjetm=-99.;
-  float puppijetpt=-99., puppijeteta=-99., puppijetphi=-99., puppijetm=-99.;
-
-  // jet branches
-  TBranch* b_genjetpt = tout->Branch("genjetpt",&genjetpt, "genjetpt/F");
-  TBranch* b_genjeteta = tout->Branch("genjeteta",&genjeteta, "genjeteta/F");
-  TBranch* b_genjetphi = tout->Branch("genjetphi",&genjetphi, "genjetphi/F");
-  TBranch* b_genjetm = tout->Branch("genjetm",&genjetm, "genjetm/F");
-  TBranch* b_puppijetpt = tout->Branch("puppijetpt",&puppijetpt, "puppijetpt/F");
-  TBranch* b_puppijeteta = tout->Branch("puppijeteta",&puppijeteta, "puppijeteta/F");
-  TBranch* b_puppijetphi = tout->Branch("puppijetphi",&puppijetphi, "puppijetphi/F");
-  TBranch* b_puppijetm = tout->Branch("puppijetm",&puppijetm, "puppijetm/F");
-
-  //for (auto p : ecfParams) {
-  //TString ecfn(makeECFString(p));
-  //tout->Branch("fj"+ecfn,&(fjECFNs[p][0]),"fj"+ecfn+"/F");
-  //}
+  tout->Branch("FatJet_pt", &puppijetpt);
+  tout->Branch("FatJet_eta", &puppijeteta);
+  tout->Branch("FatJet_phi", &puppijetphi);
+  tout->Branch("FatJet_msoftdrop", &puppijetm);
+  tout->Branch("FatJet_n2b1", &puppijetn2);
+  tout->Branch("Jet_pt", &chsjetpt);
+  tout->Branch("Jet_eta", &chsjeteta);
+  tout->Branch("Jet_phi", &chsjetphi);
+  tout->Branch("Jet_mass", &chsjetm);
+  tout->Branch("XJet_pt", &xjetpt);
+  tout->Branch("XJet_eta", &xjeteta);
+  tout->Branch("XJet_phi", &xjetphi);
+  tout->Branch("XJet_mass", &xjetm);
 
   ExRootProgressBar progressBar(nevt);
   
   auto comp_p4 = [](auto &a, auto &b) { return a.pt > b.pt; };
 
   fastjet::JetDefinition *jetDef = new fastjet::JetDefinition(fastjet::antikt_algorithm,0.8);
+  fastjet::JetDefinition *jetDef_ak4 = new fastjet::JetDefinition(fastjet::antikt_algorithm,0.4);
 
   // Soft drop -- only needed for large radius jets
   double radius = 0.8;
@@ -144,23 +191,15 @@ int main(int argc, char *argv[])
   
   fastjet::contrib::SoftDrop softDrop = fastjet::contrib::SoftDrop(sdBeta,sdZcut,radius);
 
+  TH1D* hDTotalMCWeight = new TH1D("hDTotalMCWeight","hDTotalMCWeight",1,0,2);
+
   for (unsigned int k=0; k<nevt; k++){
     itree->GetEntry(k);
 
+    hDTotalMCWeight->SetBinContent(1,hDTotalMCWeight->GetBinContent(1)+1);
+
     if (k%100==0)
       std::cout << k << " / " << nevt << std::endl;
-
-    unsigned int ngenjets = genjetbranch->GetEntries();
-    ngenjets = itree->GetLeaf("GenJet_size")->GetValue(0);
-    TLorentzVector genjet;
-    for (unsigned int j=0; j<ngenjets; j++){
-      genjet.SetPtEtaPhiM(itree->GetLeaf("GenJet.PT")->GetValue(j),itree->GetLeaf("GenJet.Eta")->GetValue(j),itree->GetLeaf("GenJet.Phi")->GetValue(j),itree->GetLeaf("GenJet.Mass")->GetValue(j));
-      genjetpt = genjet.Pt();
-      genjeteta = genjet.Eta();
-      genjetphi = genjet.Phi();
-      genjetm = genjet.M();
-      break;// only get leading gen jet
-    }
 
     input_particles.clear();
     unsigned int npfs = pfbranch->GetEntries();
@@ -173,12 +212,11 @@ int main(int argc, char *argv[])
       tmppf.phi = itree->GetLeaf("ParticleFlowCandidate.Phi")->GetValue(j);
       tmppf.e = itree->GetLeaf("ParticleFlowCandidate.E")->GetValue(j);
       tmppf.puppi = itree->GetLeaf("ParticleFlowCandidate.PuppiW")->GetValue(j);
-      tmppf.hardfrac = itree->GetLeaf("ParticleFlowCandidate.hardfrac")->GetValue(j);
       if (itree->GetLeaf("ParticleFlowCandidate.Charge")->GetValue(j)!=0){
         if (itree->GetLeaf("ParticleFlowCandidate.hardfrac")->GetValue(j)==1)
           tmppf.vtxid = 0;
         else
-          tmppf.vtxid = 1;
+	  continue; // Charged Hadron Subtraction
       }
       else
         tmppf.vtxid = -1;
@@ -188,10 +226,8 @@ int main(int argc, char *argv[])
     // sorting input particles by pT
     sort(input_particles.begin(), input_particles.end(), comp_p4);
 
-    vector<fastjet::PseudoJet> finalStates_puppi;
-    vector<fastjet::PseudoJet> finalStates_truth;
-    vector<fastjet::PseudoJet> finalStates_pf;
-    int pfid = 0;
+
+    vector<fastjet::PseudoJet> finalStates_ak8;
     for(auto &p : input_particles){
       if (p.vtxid==1)
 	continue; // Charged Hadron Subtraction
@@ -201,58 +237,102 @@ int main(int argc, char *argv[])
       // Puppi
       if (p.puppi>0.){
 	fastjet::PseudoJet curjet_puppi(p.puppi*tmp.Px(), p.puppi*tmp.Py(), p.puppi*tmp.Pz(), p.puppi*tmp.E());
-	curjet_puppi.set_user_index(pfid);
-	finalStates_puppi.emplace_back(curjet_puppi);
+	finalStates_ak8.emplace_back(curjet_puppi);
       }
-      pfid += 1;
     }
 
-    fastjet::ClusterSequence seq_puppi(sorted_by_pt(finalStates_puppi), *jetDef);
+    fastjet::ClusterSequence seq_puppi(sorted_by_pt(finalStates_ak8), *jetDef);
 
-    float minpt = 400;
+    float minpt = 150;
 
     vector<fastjet::PseudoJet> allJets_puppi(sorted_by_pt(seq_puppi.inclusive_jets(minpt)));
 
+    output_fatjets.clear();
 
     for (auto& puppiJet : allJets_puppi) {
       if (puppiJet.perp() < minpt)
 	break;
 
-      std::unique_ptr<svj::ECFCalculator>ecfcalc{nullptr};
-      ecfcalc.reset(new svj::ECFCalculator());
-
       fastjet::PseudoJet sdJet = (softDrop)(puppiJet);
-      vector<fastjet::PseudoJet> sdConstituents = sorted_by_pt(sdJet.constituents());
+      float beta = 1.0;
+      EnergyCorrelatorN2 N2(beta);
 
-      TLorentzVector tmp;
-      tmp.SetPtEtaPhiM(puppiJet.perp(),puppiJet.eta(),puppiJet.phi(),puppiJet.m());
-      if (tmp.DeltaR(genjet)<0.4){
-	puppijetpt = tmp.Pt();
-	puppijeteta = tmp.Eta();
-	puppijetphi = tmp.Phi();
-	puppijetm = sdJet.m();
-	break;
-      }
+      puppiak8 tmpak8;
+      tmpak8.pt = puppiJet.perp();
+      tmpak8.eta = puppiJet.eta();
+      tmpak8.phi = puppiJet.phi();
+      tmpak8.msd = sdJet.m();
+      tmpak8.n2 = N2(sdJet);
 
-      // get ecfs                                                                                                                                 
-      unsigned nFilter = min(30, (int)sdConstituents.size());
-      vector<fastjet::PseudoJet> sdConstsFiltered(sdConstituents.begin(), sdConstituents.begin() + nFilter);
-
-      svj::ECFParams ep;
-      ecfcalc->calculate(sdConstsFiltered);
-      for (auto iter = ecfcalc->begin(); iter != ecfcalc->end(); ++iter) {
-	int N = iter.get<svj::ECFCalculator::nP>();
-	int o = iter.get<svj::ECFCalculator::oP>();
-	int beta = iter.get<svj::ECFCalculator::bP>();
-	float ecf(iter.get<svj::ECFCalculator::ecfP>());
-	//genJetInfo.ecfs[o][N][beta] = ecf;
-	std::cout << "ECF: " << ecf << " beta: " << beta << " o: " << o << " N: " << N << std::endl;
-	ep.order = o + 1; ep.N = N + 1, ep.ibeta = beta;
-	//gt.fjECFNs[ep][0] = ecf;
-      }
+      output_fatjets.push_back(tmpak8);
 
     }
 
+    vector<fastjet::PseudoJet> finalStates_ak4;
+    for(auto &p : input_particles){
+      if (p.vtxid==1)
+	continue; // Charged Hadron Subtraction
+      TLorentzVector tmp;
+      tmp.SetPtEtaPhiE(p.pt,p.eta,p.phi,p.e);
+
+      fastjet::PseudoJet curjet_chs(tmp.Px(),tmp.Py(),tmp.Pz(),tmp.E());
+      finalStates_ak4.emplace_back(curjet_chs);
+    }
+
+
+    fastjet::ClusterSequence seq_chs(sorted_by_pt(finalStates_ak4), *jetDef_ak4);
+
+    minpt = 30;
+
+    vector<fastjet::PseudoJet> allJets_chs(sorted_by_pt(seq_chs.inclusive_jets(minpt)));
+
+    output_jets.clear();
+    for (auto& chsJet : allJets_chs) {
+      if (chsJet.perp() < minpt)
+	break;
+
+      chsak4 tmpak4;
+      tmpak4.pt = chsJet.perp();
+      tmpak4.eta = chsJet.eta();
+      tmpak4.phi = chsJet.phi();
+      tmpak4.mass = chsJet.m();
+
+      output_jets.push_back(tmpak4);
+    }
+
+
+    XConePlugin xcone_plugin3(3, 0.4, 2.0);
+    JetDefinition xcone_jetDef3(&xcone_plugin3);
+    ClusterSequence xcone_seq3(finalStates_ak4, xcone_jetDef3);
+    vector<PseudoJet> xcone_jets3 = xcone_seq3.inclusive_jets();
+
+    output_xjets.clear();
+
+    for(auto & j : sorted_by_pt(xcone_jets3)){
+      xcone4 tmpx;
+      tmpx.pt = j.pt();
+      tmpx.eta = j.eta();
+      tmpx.phi = j.phi();
+      tmpx.mass = j.m();
+      //cout << j.pt() << endl;
+      output_xjets.push_back(tmpx);
+    }
+
+    //output_fatjets.resize(2);
+
+    fill(puppijetpt, output_fatjets, [](puppiak8& p) { return p.pt; }); 
+    fill(puppijeteta, output_fatjets, [](puppiak8& p) { return p.eta; }); 
+    fill(puppijetphi, output_fatjets, [](puppiak8& p) { return p.phi; }); 
+    fill(puppijetm, output_fatjets, [](puppiak8& p) { return p.msd; }); 
+    fill(puppijetn2, output_fatjets, [](puppiak8& p) { return p.n2; }); 
+    fillak4(chsjetpt, output_jets, [](chsak4& p) { return p.pt; }); 
+    fillak4(chsjeteta, output_jets, [](chsak4& p) { return p.eta; }); 
+    fillak4(chsjetphi, output_jets, [](chsak4& p) { return p.phi; }); 
+    fillak4(chsjetm, output_jets, [](chsak4& p) { return p.mass; }); 
+    fillxcone4(xjetpt, output_xjets, [](xcone4& p) { return p.pt; }); 
+    fillxcone4(xjeteta, output_xjets, [](xcone4& p) { return p.eta; }); 
+    fillxcone4(xjetphi, output_xjets, [](xcone4& p) { return p.phi; }); 
+    fillxcone4(xjetm, output_xjets, [](xcone4& p) { return p.mass; }); 
 
     tout->Fill();
 
@@ -260,6 +340,8 @@ int main(int argc, char *argv[])
 
   }
 
+  hDTotalMCWeight->SetDirectory(0);
+  fout->WriteTObject(hDTotalMCWeight); delete hDTotalMCWeight; hDTotalMCWeight = nullptr;
   fout->Write();
   fout->Close();
 
