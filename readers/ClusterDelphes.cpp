@@ -163,6 +163,10 @@ int main(int argc, char *argv[])
   std::vector<float> xjetpt, xjeteta, xjetphi, xjetm;
   xjetpt.reserve(30); xjeteta.reserve(30); xjetphi.reserve(30); xjetm.reserve(30); 
 
+  float ht=0;
+
+  TBranch* b_ht = tout->Branch("HT",&ht, "HT/F");
+
   tout->Branch("FatJet_pt", &puppijetpt);
   tout->Branch("FatJet_eta", &puppijeteta);
   tout->Branch("FatJet_phi", &puppijetphi);
@@ -288,6 +292,9 @@ int main(int argc, char *argv[])
 
     output_jets.clear();
     for (auto& chsJet : allJets_chs) {
+      
+      ht += chsJet.perp();
+      
       if (chsJet.perp() < minpt)
 	break;
 
