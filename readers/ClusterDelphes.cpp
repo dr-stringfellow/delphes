@@ -164,8 +164,12 @@ int main(int argc, char *argv[])
   xjetpt.reserve(30); xjeteta.reserve(30); xjetphi.reserve(30); xjetm.reserve(30); 
 
   float ht=0;
+  int nFatJet = 0;
+  int nJet = 0;
 
   TBranch* b_ht = tout->Branch("HT",&ht, "HT/F");
+  TBranch* b_nFatJet = tout->Branch("nFatJet",&nFatJet, "nFatJet/I");
+  TBranch* b_nJet = tout->Branch("nJet",&nJet, "nJet/I");
 
   tout->Branch("FatJet_pt", &puppijetpt);
   tout->Branch("FatJet_eta", &puppijeteta);
@@ -247,9 +251,11 @@ int main(int argc, char *argv[])
 
     fastjet::ClusterSequence seq_puppi(sorted_by_pt(finalStates_ak8), *jetDef);
 
-    float minpt = 150;
+    float minpt = 100;
 
     vector<fastjet::PseudoJet> allJets_puppi(sorted_by_pt(seq_puppi.inclusive_jets(minpt)));
+
+    nFatJet = allJets_puppi.size();
 
     output_fatjets.clear();
 
@@ -286,9 +292,11 @@ int main(int argc, char *argv[])
 
     fastjet::ClusterSequence seq_chs(sorted_by_pt(finalStates_ak4), *jetDef_ak4);
 
-    minpt = 30;
+    minpt = 15;
 
     vector<fastjet::PseudoJet> allJets_chs(sorted_by_pt(seq_chs.inclusive_jets(minpt)));
+
+    nJet = allJets_chs.size();
 
     output_jets.clear();
     for (auto& chsJet : allJets_chs) {
