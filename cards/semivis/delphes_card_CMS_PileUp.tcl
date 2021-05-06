@@ -1085,6 +1085,9 @@ module UniqueObjectFinder UniqueObjectFinder {
 module TreeWriter TreeWriter {
 
   #add Branch PileUpMerger/stableParticles PileUpMix GenParticle
+  add Branch PileUpMerger/stableParticles PileUpMix GenParticle
+  add Branch PileUpMerger/vertices GenVertex Vertex
+
 
   add Branch GenJetFinder/jets GenJet Jet
   add Branch GenMissingET/momentum GenMissingET MissingET
@@ -1099,7 +1102,7 @@ module TreeWriter TreeWriter {
   add Branch RunPUPPI/PuppiParticles ParticleFlowCandidate ParticleFlowCandidate
 
   #add Branch JetEnergyScale/jets Jet Jet
-  #add Branch FatJetFinder/jets FatJet Jet
+  ##add Branch FatJetFinder/jets FatJet Jet
 
   add Branch Rho/rho Rho Rho
   add Branch PileUpMerger/vertices Vertex Vertex
