@@ -209,6 +209,8 @@ int main(int argc, char *argv[])
     if (k%100==0)
       std::cout << k << " / " << nevt << std::endl;
 
+    ht = 0.;
+
     input_particles.clear();
     unsigned int npfs = pfbranch->GetEntries();
     npfs = itree->GetLeaf("ParticleFlowCandidate_size")->GetValue(0);
