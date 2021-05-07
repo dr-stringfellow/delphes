@@ -226,6 +226,7 @@ int main(int argc, char *argv[])
         if (itree->GetLeaf("ParticleFlowCandidate.hardfrac")->GetValue(j)==1)
           tmppf.vtxid = 0;
         else
+          tmppf.vtxid = 1;
 	  continue; // Charged Hadron Subtraction
       }
       else
