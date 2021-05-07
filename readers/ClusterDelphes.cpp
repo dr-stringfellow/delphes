@@ -143,7 +143,7 @@ int main(int argc, char *argv[])
   TTree* itree = (TTree*)ifile->Get("Delphes;1");
 
   auto* fout = TFile::Open(argv[2], "RECREATE");
-  auto* tout = new TTree("events", "events");
+  auto* tout = new TTree("Events", "Events");
 
   unsigned int nevt = itree->GetEntries();
   TBranch* pfbranch = (TBranch*)itree->GetBranch("ParticleFlowCandidate");
