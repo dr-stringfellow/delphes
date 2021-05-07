@@ -97,7 +97,7 @@ module PileUpMerger PileUpMerger {
   set PileUpFile ./PileUp_XXX.data
 
   # average expected pile up
-  set MeanPileUp 230
+  set MeanPileUp 23
 
    # maximum spread in the beam direction in m
   set ZVertexSpread 0.25
