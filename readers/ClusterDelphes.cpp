@@ -147,29 +147,36 @@ int main(int argc, char *argv[])
 
   unsigned int nevt = itree->GetEntries();
   TBranch* pfbranch = (TBranch*)itree->GetBranch("ParticleFlowCandidate");
+  TBranch* genjetbranch = (TBranch*)itree->GetBranch("GenJet");
   std::cout << "NEVT: " << nevt << std::endl;
   vector<PFCand> input_particles;
   vector<puppiak8> output_fatjets;
   vector<chsak4> output_jets;
+  vector<chsak4> output_genjets;
   vector<xcone4> output_xjets;
   output_fatjets.reserve(10);
   output_jets.reserve(30);
+  output_genjets.reserve(30);
   output_xjets.reserve(3);
 
   std::vector<float> puppijetpt, puppijeteta, puppijetphi, puppijetm, puppijetn2;
   puppijetpt.reserve(10); puppijeteta.reserve(10); puppijetphi.reserve(10); puppijetm.reserve(10); puppijetn2.reserve(10);
   std::vector<float> chsjetpt, chsjeteta, chsjetphi, chsjetm;
   chsjetpt.reserve(30); chsjeteta.reserve(30); chsjetphi.reserve(30); chsjetm.reserve(30); 
+  std::vector<float> genjetpt, genjeteta, genjetphi, genjetm;
+  genjetpt.reserve(30); genjeteta.reserve(30); genjetphi.reserve(30); genjetm.reserve(30); 
   std::vector<float> xjetpt, xjeteta, xjetphi, xjetm;
-  xjetpt.reserve(30); xjeteta.reserve(30); xjetphi.reserve(30); xjetm.reserve(30); 
+  xjetpt.reserve(3); xjeteta.reserve(3); xjetphi.reserve(3); xjetm.reserve(3); 
 
   float ht=0;
   int nFatJet = 0;
   int nJet = 0;
+  int nGenJet = 0;
 
   TBranch* b_ht = tout->Branch("HT",&ht, "HT/F");
   TBranch* b_nFatJet = tout->Branch("nFatJet",&nFatJet, "nFatJet/I");
   TBranch* b_nJet = tout->Branch("nJet",&nJet, "nJet/I");
+  TBranch* b_nGenJet = tout->Branch("nGenJet",&nGenJet, "nGenJet/I");
 
   tout->Branch("FatJet_pt", &puppijetpt);
   tout->Branch("FatJet_eta", &puppijeteta);
@@ -184,6 +191,10 @@ int main(int argc, char *argv[])
   tout->Branch("XJet_eta", &xjeteta);
   tout->Branch("XJet_phi", &xjetphi);
   tout->Branch("XJet_mass", &xjetm);
+  tout->Branch("GenJet_pt", &genjetpt);
+  tout->Branch("GenJet_eta", &genjeteta);
+  tout->Branch("GenJet_phi", &genjetphi);
+  tout->Branch("GenJet_mass", &genjetm);
 
   ExRootProgressBar progressBar(nevt);
   
@@ -210,6 +221,21 @@ int main(int argc, char *argv[])
       std::cout << k << " / " << nevt << std::endl;
 
     ht = 0.;
+
+
+    output_genjets.clear();
+    unsigned int ngenjets = genjetbranch->GetEntries();    
+    ngenjets = itree->GetLeaf("GenJet_size")->GetValue(0);
+    for (unsigned int j=0; j<ngenjets; j++){
+      chsak4 tmpjet;
+      tmpjet.pt = itree->GetLeaf("GenJet.PT")->GetValue(j);
+      tmpjet.eta = itree->GetLeaf("GenJet.Eta")->GetValue(j);
+      tmpjet.phi = itree->GetLeaf("GenJet.Phi")->GetValue(j);
+      tmpjet.mass = itree->GetLeaf("GenJet.Mass")->GetValue(j);
+      output_genjets.push_back(tmpjet);
+    }
+    nGenJet = ngenjets;
+
 
     input_particles.clear();
     unsigned int npfs = pfbranch->GetEntries();
@@ -351,6 +377,10 @@ int main(int argc, char *argv[])
     fillxcone4(xjeteta, output_xjets, [](xcone4& p) { return p.eta; }); 
     fillxcone4(xjetphi, output_xjets, [](xcone4& p) { return p.phi; }); 
     fillxcone4(xjetm, output_xjets, [](xcone4& p) { return p.mass; }); 
+    fillak4(genjetpt, output_genjets, [](chsak4& p) { return p.pt; }); 
+    fillak4(genjeteta, output_genjets, [](chsak4& p) { return p.eta; }); 
+    fillak4(genjetphi, output_genjets, [](chsak4& p) { return p.phi; }); 
+    fillak4(genjetm, output_genjets, [](chsak4& p) { return p.mass; }); 
 
     tout->Fill();
 
