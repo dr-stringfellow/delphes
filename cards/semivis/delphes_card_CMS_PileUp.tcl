@@ -264,24 +264,24 @@ module MomentumSmearing MuonMomentumSmearing {
 # Primary vertex reconstruction
 ##################################
 
-module VertexFinder VertexFinder {
+#module VertexFinder VertexFinder {
 
-  set InputArray TrackSmearing/tracks
+#  set InputArray TrackSmearing/tracks
 #  set InputArray TimeSmearing/tracks
 #  set InputArray TrackMerger/tracks
 
-  set OutputArray tracks
-  set VertexOutputArray vertices
+#  set OutputArray tracks
+#  set VertexOutputArray vertices
 
-  set MinPT 1.0
-  set MinNDF 4
-  set SeedMinPT 1.0
+#  set MinPT 1.0
+#  set MinNDF 4
+#  set SeedMinPT 1.0
 
-  set Sigma     3.0
-  set MaxEta    10.0
-  set GrowSeeds 1
+#  set Sigma     3.0
+#  set MaxEta    10.0
+#  set GrowSeeds 1
 
-}
+#}
 
 
 ####################
@@ -728,7 +728,7 @@ module FastJetFinder GenJetFinder {
   set JetAlgorithm 6
   set ParameterR 0.4
 
-  set JetPTMin 20.0
+  set JetPTMin 15.0
 }
 
 #########################
@@ -1106,5 +1106,6 @@ module TreeWriter TreeWriter {
 
   add Branch Rho/rho Rho Rho
   add Branch PileUpMerger/vertices Vertex Vertex
+  add Branch VertexFinder/vertices RecoVertex Vertex
 
 }
